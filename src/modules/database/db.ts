@@ -1,11 +1,25 @@
 import { Sequelize } from 'sequelize-typescript';
 import { User } from '../users/user.model';
 
-export const sequelize = new Sequelize("bir-bina-nest", "postgres", "metroboomin2425", {
-    host: "localhost",
-    dialect: "postgres",
-    logging: false,
-});
+
+// export const sequelize = new Sequelize("bir-bina-nest", "postgres", "metroboomin2425", {
+//     host: "localhost",
+//     dialect: "postgres",
+//     logging: false,
+// });
+
+export const sequelize = new Sequelize(
+    process.env.DB_NAME || 'bir-bina-nest',
+    process.env.DB_USER || 'postgres',
+    process.env.DB_PASS || 'metroboomin2425',
+    {
+        host: process.env.DB_HOST || 'localhost',
+        port: Number(process.env.DB_PORT) || 3000,
+        dialect: 'postgres',
+        logging: false,
+    }
+);
+
 
 export const DatabaseProvider = {
     provide: 'SEQUELIZE',
