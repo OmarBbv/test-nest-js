@@ -8,17 +8,40 @@ import { User } from '../users/user.model';
 //     logging: false,
 // });
 
-export const sequelize = new Sequelize(
-    process.env.DB_NAME!,
-    process.env.DB_USER!,
-    process.env.DB_PASS!,
-    {
-        host: process.env.DB_HOST!,
-        port: Number(process.env.DB_PORT) || 5432,
-        dialect: 'postgres',
-        logging: false,
+export const sequelize = (() => {
+    const databaseUrl = process.env.DATABASE_URL || process.env.DB_URL;
+
+    if (databaseUrl) {
+        // Prefer a single connection string when provided (e.g. from Render)
+        return new Sequelize(databaseUrl, {
+            dialect: 'postgres',
+            logging: false,
+            dialectOptions: {
+                // Render-managed Postgres typically requires SSL
+                ssl: {
+                    require: true,
+                    rejectUnauthorized: false,
+                },
+            },
+        });
     }
-);
+
+    return new Sequelize(
+        process.env.DB_NAME!,
+        process.env.DB_USER!,
+        process.env.DB_PASS!,
+        {
+            host: process.env.DB_HOST!,
+            port: Number(process.env.DB_PORT) || 5432,
+            dialect: 'postgres',
+            logging: false,
+            // Enable SSL via env if needed for other providers
+            dialectOptions: (process.env.DB_SSL === 'true')
+                ? { ssl: { require: true, rejectUnauthorized: false } }
+                : undefined,
+        }
+    );
+})();
 
 
 
